@@ -1,0 +1,39 @@
+name: 价值投资分析日报
+
+on:
+  schedule:
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      stocks:
+        description: '指定分析的股票，用逗号分隔'
+        required: false
+        default: ''
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+      - name: 运行分析
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: |
+          if [ -n "${{ github.event.inputs.stocks }}" ]; then
+            python main.py --stocks ${{ github.event.inputs.stocks }}
+          else
+            python main.py
+          fi          
+      - name: 上传报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-report
+          path: reports/*.csv
+          retention-days: 30
