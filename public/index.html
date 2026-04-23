@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 投资助手 - 配置中心</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        header h1 { font-size: 32px; margin-bottom: 8px; }
+        header p { font-size: 16px; opacity: 0.9; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2 .icon { font-size: 24px; }
+
+        /* 股票列表 */
+        .stock-list { display: flex; flex-direction: column; gap: 12px; }
+        .stock-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .stock-item:hover { border-color: #667eea; }
+        .stock-item.disabled { opacity: 0.5; }
+        .stock-info { display: flex; align-items: center; gap: 12px; }
+        .stock-code {
+            font-weight: 700;
+            font-size: 16px;
+            color: #667eea;
+            background: #eef2ff;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .stock-name { font-size: 15px; color: #555; }
+        .stock-market {
+            font-size: 12px;
+            color: #888;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .stock-actions { display: flex; align-items: center; gap: 12px; }
+
+        /* 开关 */
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: #ddd;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active { background: #667eea; }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle.active::after { transform: translateX(22px); }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .btn-delete:hover { opacity: 1; }
+
+        /* 添加股票 */
+        .add-stock {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .add-stock select, .add-stock input {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .add-stock select:focus, .add-stock input:focus { border-color: #667eea; }
+        .add-stock select { width: 140px; }
+        .add-stock input { flex: 1; min-width: 180px; }
+        .btn-add {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
+        .btn-add:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* 设置区域 */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-label { font-size: 16px; color: #444; }
+        .setting-control input[type="time"] {
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* 星期选择 */
+        .days-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .day-chip {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+            background: white;
+        }
+        .day-chip:hover { border-color: #667eea; color: #667eea; }
+        .day-chip.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Webhook 输入 */
+        .webhook-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: monospace;
+        }
+        .webhook-input:focus { border-color: #667eea; }
+
+        /* 操作按钮区 */
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        .btn-primary {
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .btn-secondary {
+            padding: 14px 36px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: #667eea; color: white; }
+
+        /* 状态提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .toast.error { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); }
+        .toast.info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* 加载状态 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 投资助手</h1>
+            <p>配置您的持仓监控规则，定时推送到飞书</p>
+        </header>
+
+        <!-- 股票列表 -->
+        <div class="card">
+            <h2><span class="icon">📈</span> 监控股票</h2>
+            <div id="stockList" class="stock-list">
+                <div class="loading" style="margin: 20px auto; display: block; border-color: #ddd; border-top-color: #667eea;"></div>
+            </div>
+            <div class="add-stock">
+                <select id="marketSelect">
+                    <option value="A股上海">A股上海</option>
+                    <option value="A股深圳">A股深圳</option>
+                    <option value="港股">港股</option>
+                </select>
+                <input type="text" id="stockCodeInput" placeholder="输入股票代码，如 600519">
+                <button class="btn-add" id="addStockBtn" onclick="addStock()">添加</button>
+            </div>
+        </div>
+
+        <!-- 推送设置 -->
+        <div class="card">
+            <h2><span class="icon">⏰</span> 推送设置</h2>
+            <div class="setting-row">
+                <span class="setting-label">开启定时推送</span>
+                <div class="toggle" id="scheduleToggle" onclick="toggleSchedule()"></div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">每日推送时间</span>
+                <div class="setting-control">
+                    <input type="time" id="scheduleTime" value="09:00">
+                </div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">推送星期</span>
+                <div class="days-selector" id="daysSelector">
+                    <div class="day-chip" data-day="1">一</div>
+                    <div class="day-chip" data-day="2">二</div>
+                    <div class="day-chip" data-day="3">三</div>
+                    <div class="day-chip" data-day="4">四</div>
+                    <div class="day-chip" data-day="5">五</div>
+                    <div class="day-chip" data-day="6">六</div>
+                    <div class="day-chip" data-day="0">日</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 飞书配置 -->
+        <div class="card">
+            <h2><span class="icon">📩</span> 飞书机器人 Webhook</h2>
+            <input type="text" class="webhook-input" id="webhookInput" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/...">
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="actions">
+            <button class="btn-primary" onclick="saveConfig()">保存配置</button>
+            <button class="btn-secondary" onclick="triggerNow()">立即执行</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let config = { stocks: [], schedule: { enabled: true, time: '09:00', days: [1,2,3,4,5] }, feishuWebhook: '' };
+
+        // 初始化
+        async function init() {
+            await loadConfig();
+            renderStocks();
+            renderSchedule();
+            document.getElementById('webhookInput').value = config.feishuWebhook || '';
+        }
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/config');
+                config = await res.json();
+            } catch (e) {
+                showToast('加载配置失败，使用默认配置', 'error');
+            }
+        }
+
+        // 渲染股票列表
+        function renderStocks() {
+            const container = document.getElementById('stockList');
+            if (config.stocks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>暂无监控股票，请添加</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = config.stocks.map((stock, index) => `
+                <div class="stock-item ${stock.enabled ? '' : 'disabled'}">
+                    <div class="stock-info">
+                        <span class="stock-code">${stock.code}</span>
+                        <span class="stock-name">${stock.name || stock.code}</span>
+                        <span class="stock-market">${stock.market || ''}</span>
+                    </div>
+                    <div class="stock-actions">
+                        <div class="toggle ${stock.enabled ? 'active' : ''}" onclick="toggleStock(${index})"></div>
+                        <button class="btn-delete" onclick="deleteStock(${index})">🚮</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染定时设置
+        function renderSchedule() {
+            const toggle = document.getElementById('scheduleToggle');
+            toggle.classList.toggle('active', config.schedule.enabled);
+            document.getElementById('scheduleTime').value = config.schedule.time;
+
+            document.querySelectorAll('.day-chip').forEach(chip => {
+                const day = parseInt(chip.dataset.day);
+                chip.classList.toggle('selected', config.schedule.days.includes(day));
+                chip.onclick = () => toggleDay(day);
+            });
+        }
+
+        // 切换股票启用
+        function toggleStock(index) {
+            config.stocks[index].enabled = !config.stocks[index].enabled;
+            renderStocks();
+        }
+
+        // 删除股票
+        function deleteStock(index) {
+            config.stocks.splice(index, 1);
+            renderStocks();
+        }
+
+        // 添加股票
+        async function addStock() {
+            const market = document.getElementById('marketSelect').value;
+            const input = document.getElementById('stockCodeInput').value.trim();
+            const btn = document.getElementById('addStockBtn');
+
+            if (!input) {
+                showToast('请输入股票代码', 'error');
+                return;
+            }
+
+            let code, name;
+            if (market === 'A股上海') {
+                code = input.replace(/\.SS$/i, '') + '.SS';
+                name = input;
+            } else if (market === 'A股深圳') {
+                code = input.replace(/\.SZ$/i, '') + '.SZ';
+                name = input;
+            } else {
+                code = input.replace(/\.HK$/i, '') + '.HK';
+                name = input;
+            }
+
+            if (config.stocks.find(s => s.code === code)) {
+                showToast('该股票已存在', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading" style="width:16px;height:16px;border-width:2px;"></div>';
+
+            try {
+                const res = await fetch(`/api/stock/validate?code=${encodeURIComponent(code)}`);
+                const data = await res.json();
+                if (data.success) {
+                    config.stocks.push({
+                        code: data.code,
+                        name: data.name,
+                        market: market,
+                        enabled: true
+                    });
+                    renderStocks();
+                    document.getElementById('stockCodeInput').value = '';
+                    showToast(`已添加 ${data.name}`, 'success');
+                } else {
+                    showToast(data.error || '验证失败', 'error');
+                }
+            } catch (e) {
+                showToast('验证请求失败', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '添加';
+            }
+        }
+
+        // 切换定时任务
+        function toggleSchedule() {
+            config.schedule.enabled = !config.schedule.enabled;
+            renderSchedule();
+        }
+
+        // 切换星期
+        function toggleDay(day) {
+            const idx = config.schedule.days.indexOf(day);
+            if (idx >= 0) config.schedule.days.splice(idx, 1);
+            else config.schedule.days.push(day);
+            config.schedule.days.sort();
+            renderSchedule();
+        }
+
+        // 保存配置
+        async function saveConfig() {
+            config.schedule.time = document.getElementById('scheduleTime').value;
+            config.feishuWebhook = document.getElementById('webhookInput').value.trim();
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('配置已保存，定时任务已更新', 'success');
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('保存请求失败', 'error');
+            }
+        }
+
+        // 立即执行
+        async function triggerNow() {
+            const btn = document.querySelector('.btn-secondary');
+            const originalText = btn.textContent;
+            btn.textContent = '执行中...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/trigger', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('任务已触发，请查看飞书', 'success');
+                } else {
+                    showToast(data.error || '触发失败', 'error');
+                }
+            } catch (e) {
+                showToast('触发请求失败', 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 提示
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // 回车添加
+        document.getElementById('stockCodeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addStock();
+        });
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>

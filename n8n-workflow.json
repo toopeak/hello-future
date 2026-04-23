@@ -1,0 +1,77 @@
+{
+  "id": "EFFB171C-29F5-4024-B3FE-F4B64678D329",
+  "versionId": "EFFB171C-29F5-4024-B3FE-F4B64678D329",
+  "name": "价值投资-每日持仓监控",
+  "nodes": [
+    {
+      "id": "sched-001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 22 * * 1,2,3,4,5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "http-001",
+      "name": "获取分析卡片",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:3001/api/feishu-card",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "http-002",
+      "name": "推送到飞书",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/b24030c8-cc91-48e1-ace1-c01e36c0f778",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.card) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "获取分析卡片", "type": "main", "index": 0 }]]
+    },
+    "获取分析卡片": {
+      "main": [[{ "node": "推送到飞书", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Shanghai"
+  }
+}

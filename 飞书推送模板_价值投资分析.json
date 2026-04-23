@@ -1,0 +1,241 @@
+{
+  "msg_type": "interactive",
+  "card": {
+    "config": {
+      "wide_screen_mode": true
+    },
+    "header": {
+      "template": "blue",
+      "title": {
+        "tag": "plain_text",
+        "content": "📊 价值投资分析日报 | 2026-04-24"
+      }
+    },
+    "elements": [
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**分析方法**: Graham Number + EPV + 历史PE锚定 | **风格**: 纯价值投资"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "## 🟢 买入机会 | 腾讯 (0700.HK)"
+        }
+      },
+      {
+        "tag": "div",
+        "fields": [
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**当前价**
+HK$**495.20**
+⭐ 综合评分: 81.3"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**PE(TTM)**
+18.17x (历史30%分位)
+**Forward PE**
+14.47x"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**Graham估值**
+HK$299.8
+安全边际: -"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**EPV估值**
+HK$432
+安全边际: **15%**
+⚠️ 价格高于EPV"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**ROE / 净利率**
+~18% / 29.9%
+⚡ 盈利能力极强"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**股息率**
+1.05%
+**分析师目标价**
+HK$718 (+45%)"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**"抅余逻辑**: PE处于近5年低位，监管利空充分反映。游戏+广告+云业务复苏，Forward PE仅14x，估值修复空间大。**
+        }
+      },
+      {
+        "tag": "action",
+        "actions": [
+          {
+            "tag": "button",
+            "text": {
+              "tag": "plain_text",
+              "content": "📈 建仓策略: 分批买入"
+            },
+            "type": "primary",
+            "value": {
+              "key": "tencent_strategy"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "## 🟡 观察 | 汇川技术 (300124.SZ)"
+        }
+      },
+      {
+        "tag": "div",
+        "fields": [
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**当前价**
+¥**65.34**
+⭐ 综合评分: 69.3"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**PE(TTM)**
+34.85x (历史40%分位)
+**Forward PE**
+26.53x"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**Graham估值**
+¥23.2
+安全边际: -"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**EPV估值**
+¥34.5
+安全边际: **-89%**
+❌ 严重高估EPV"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**ROE / 净利率**
+16.7% / 12.0%
+✅ 盈利能力良好"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "tag": "lark_md",
+              "content": "**股息率**
+0.61%
+**分析师目标价**
+¥87.87 (+34%)"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**"抅余逻辑**: 好公司+贵价格。新能源+工业自动化赛道优质，但35x PE已透支未来2-3年增长。等待回调至合理估值区间。**
+        }
+      },
+      {
+        "tag": "action",
+        "actions": [
+          {
+            "tag": "button",
+            "text": {
+              "tag": "plain_text",
+              "content": "⏳ 等待回调至 ¥45-50 再建仓"
+            },
+            "type": "default",
+            "value": {
+              "key": "inovance_wait"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "## ⚠️ 风险提示"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**腾讯**: 游戏监管政策变化、广告增速放缓、投资组合减值\n**汇川技术**: 制造业下行周期、新能源渗透率见顶、竞争加剧"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**分析时间**: 2026-04-24 | **数据来源**: Yahoo Finance | **系统**: 价值投资分析系统 v2.0"
+        }
+      }
+    ]
+  }
+}

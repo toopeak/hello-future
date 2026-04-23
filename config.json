@@ -1,0 +1,22 @@
+{
+  "stock_pool": [
+    {"code": "300124", "market": "A股", "name": "汇川技术"},
+    {"code": "600519", "market": "A股", "name": "贵州茅台"},
+    {"code": "000858", "market": "A股", "name": "五粮液"},
+    {"code": "0700.HK", "market": "港股", "name": "腾讯控股"},
+    {"code": "3690.HK", "market": "港股", "name": "美团-W"},
+    {"code": "2318.HK", "market": "港股", "name": "中国平安"}
+  ],
+  "watchlist": [
+    {"code": "300750", "market": "A股", "name": "宁德时代"},
+    {"code": "601318", "market": "A股", "name": "中国平安"},
+    {"code": "0981.HK", "market": "港股", "name": "中芯国际"}
+  ],
+  "settings": {
+    "min_margin_of_safety": 15,
+    "min_roe": 10,
+    "max_debt_ratio": 60,
+    "cache_ttl": 3600,
+    "risk_free_rate": 0.025
+  }
+}
