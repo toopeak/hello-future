@@ -206,25 +206,47 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
             observe_signals = [r for r in results if r.signal == 'OBSERVE']
             sell_signals = [r for r in results if r.signal in ['REDUCE', 'SELL']]
             
-            # 构建消息内容
+            # 构建详细消息
             content_parts = []
-            content_parts.append(f"**价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}**\n")
-            content_parts.append(f"共分析 {len(results)} 只股票 | 买入:{len(buy_signals)} | 观察:{len(observe_signals)} | 卖出:{len(sell_signals)}\n")
+            content_parts.append(f"**价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}**")
+            content_parts.append(f"共分析 {len(results)} 只 | 买入:{len(buy_signals)} | 观察:{len(observe_signals)} | 卖出:{len(sell_signals)}\n")
             
-            if buy_signals:
-                content_parts.append("\n🟢 **买入机会**")
-                for r in buy_signals[:3]:
-                    content_parts.append(f"- {r.name}({r.code}): {r.currency}{r.current_price:.2f} | 评分{r.total_score} | 安全边际{r.valuation.margin_of_safety:.1f}%")
+            # 每只股票详细分析
+            for r in results[:5]:  # 最多5只
+                emoji = signal_emoji.get(r.signal, '➖')
+                content_parts.append(f"\n---\n")
+                content_parts.append(f"{emoji} **{r.name} ({r.code})** | {r.signal} | 评分:{r.total_score}")
+                content_parts.append(f"**当前价**: {r.currency}{r.current_price:.2f} | **安全边际**: {r.valuation.margin_of_safety or 0:+.1f}%")
+                
+                # Buffett护城河
+                content_parts.append(f"**护城河**: {r.buffett.moat_assessment}")
+                
+                # 核心财务数据
+                fin_lines = []
+                if r.buffett.financial_score:
+                    fin_lines.append(f"ROE:{r.buffett.financial_score} 财务健康:{r.buffett.financial_score}")
+                if r.valuation.graham_value:
+                    fin_lines.append(f"Graham估值:{r.currency}{r.valuation.graham_value:.1f}")
+                if r.valuation.epv_value:
+                    fin_lines.append(f"EPV:{r.currency}{r.valuation.epv_value:.1f}")
+                if fin_lines:
+                    content_parts.append(" | ".join(fin_lines))
+                
+                # 专家观点
+                content_parts.append(f"**Buffett**: {r.buffett.verdict or '护城河' + str(r.buffett.moat_score) + '分'}")
+                content_parts.append(f"**Munger**: {r.munger.verdict or r.munger.business_quality}")
+                
+                # 操作建议
+                content_parts.append(f"💡 **建议**: {r.recommendation}")
+                
+                # 风险/机会
+                if r.risk_factors:
+                    content_parts.append(f"⚠️ 风险: {', '.join(r.risk_factors[:2])}")
+                if r.opportunity_factors:
+                    content_parts.append(f"✅ 机会: {', '.join(r.opportunity_factors[:2])}")
             
-            if observe_signals:
-                content_parts.append("\n👁️ **观察中**")
-                for r in observe_signals[:3]:
-                    content_parts.append(f"- {r.name}({r.code}): {r.currency}{r.current_price:.2f} | 评分{r.total_score}")
-            
-            if sell_signals:
-                content_parts.append("\n🔴 **卖出警示**")
-                for r in sell_signals:
-                    content_parts.append(f"- {r.name}({r.code}): {r.currency}{r.current_price:.2f} | 评分{r.total_score}")
+            # 底部说明
+            content_parts.append(f"\n---\n*框架: Buffett-Munger | 数据源: Yahoo Finance/AKShare*")
             
             # 发送
             notifier.send_markdown("价值投资分析日报", "\n".join(content_parts))
