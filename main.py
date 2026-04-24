@@ -217,18 +217,19 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
             }
             
             content_parts = []
-            content_parts.append(f"**价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}**")
+            content_parts.append(f"📊 价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}")
             content_parts.append(f"共分析 {len(results)} 只 | 买入:{len(buy_signals)} | 观察:{len(observe_signals)} | 卖出:{len(sell_signals)}\n")
             
             # 每只股票详细分析
-            for r in results[:5]:  # 最多5只
+            for r in results[:5]:
                 emoji = signal_emoji.get(r.signal, '➖')
-                content_parts.append(f"\n---\n")
-                content_parts.append(f"{emoji} **{r.name} ({r.code})** | {r.signal} | 评分:{r.total_score}")
-                content_parts.append(f"**当前价**: {r.currency}{r.current_price:.2f} | **安全边际**: {r.valuation.margin_of_safety or 0:+.1f}%")
+                content_parts.append(f"\n{'='*40}")
+                content_parts.append(f"{emoji} {r.name} ({r.code}) | {r.signal} | 评分:{r.total_score}")
+                content_parts.append(f"当前价: {r.currency}{r.current_price:.2f} | 安全边际: {r.valuation.margin_of_safety or 0:+.1f}%")
                 
                 # Buffett护城河
-                content_parts.append(f"**护城河**: {r.buffett.moat_assessment}")
+                if r.buffett.moat_assessment:
+                    content_parts.append(f"护城河: {r.buffett.moat_assessment}")
                 
                 # 核心财务数据
                 fin_lines = []
@@ -242,11 +243,13 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
                     content_parts.append(" | ".join(fin_lines))
                 
                 # 专家观点
-                content_parts.append(f"**Buffett**: {r.buffett.verdict or '护城河' + str(r.buffett.moat_score) + '分'}")
-                content_parts.append(f"**Munger**: {r.munger.verdict or r.munger.business_quality}")
+                buffett_text = r.buffett.verdict or f"护城河评分:{r.buffett.moat_score}"
+                munger_text = r.munger.verdict or r.munger.business_quality or "分析中"
+                content_parts.append(f"Buffett: {buffett_text}")
+                content_parts.append(f"Munger: {munger_text}")
                 
                 # 操作建议
-                content_parts.append(f"💡 **建议**: {r.recommendation}")
+                content_parts.append(f"💡 建议: {r.recommendation}")
                 
                 # 风险/机会
                 if r.risk_factors:
@@ -255,10 +258,11 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
                     content_parts.append(f"✅ 机会: {', '.join(r.opportunity_factors[:2])}")
             
             # 底部说明
-            content_parts.append(f"\n---\n*框架: Buffett-Munger | 数据源: Yahoo Finance/AKShare*")
+            content_parts.append(f"\n{'='*40}")
+            content_parts.append(f"框架: Buffett-Munger | 数据源: Yahoo Finance/AKShare")
             
             # 发送
-            notifier.send_markdown("价值投资分析日报", "\n".join(content_parts))
+            notifier.send_text("\n".join(content_parts))
             logger.info("推送完成")
     
     # 保存报告
