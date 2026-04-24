@@ -207,6 +207,15 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
             sell_signals = [r for r in results if r.signal in ['REDUCE', 'SELL']]
             
             # 构建详细消息
+            signal_emoji = {
+                'STRONG_BUY': '🔴',
+                'BUY': '🟢',
+                'HOLD': '🟡',
+                'OBSERVE': '👁️',
+                'REDUCE': '⚠️',
+                'SELL': '🔴'
+            }
+            
             content_parts = []
             content_parts.append(f"**价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}**")
             content_parts.append(f"共分析 {len(results)} 只 | 买入:{len(buy_signals)} | 观察:{len(observe_signals)} | 卖出:{len(sell_signals)}\n")
