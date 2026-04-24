@@ -216,54 +216,103 @@ def run_analysis(push: bool = True, stock_pool: List[Dict] = None) -> List[Final
                 'SELL': '🔴'
             }
             
-            content_parts = []
-            content_parts.append(f"📊 价值投资日报 | {datetime.now().strftime('%Y-%m-%d')}")
-            content_parts.append(f"共分析 {len(results)} 只 | 买入:{len(buy_signals)} | 观察:{len(observe_signals)} | 卖出:{len(sell_signals)}\n")
+            # 构建详细消息 - 使用interactive卡片
+            signal_emoji = {
+                'STRONG_BUY': '🔴',
+                'BUY': '🟢',
+                'HOLD': '🟡',
+                'OBSERVE': '👁️',
+                'REDUCE': '⚠️',
+                'SELL': '🔴'
+            }
             
-            # 每只股票详细分析
+            elements = []
+            
+            # 添加每只股票
             for r in results[:5]:
                 emoji = signal_emoji.get(r.signal, '➖')
-                content_parts.append(f"\n{'='*40}")
-                content_parts.append(f"{emoji} {r.name} ({r.code}) | {r.signal} | 评分:{r.total_score}")
-                content_parts.append(f"当前价: {r.currency}{r.current_price:.2f} | 安全边际: {r.valuation.margin_of_safety or 0:+.1f}%")
                 
-                # Buffett护城河
+                # 股票头部
+                stock_lines = [
+                    f"{emoji} **{r.name} ({r.code})** | {r.signal} | 评分:{r.total_score}",
+                    f"当前价: **{r.currency}{r.current_price:.2f}** | 安全边际: **{r.valuation.margin_of_safety or 0:+.1f}%**"
+                ]
+                
+                # 护城河
                 if r.buffett.moat_assessment:
-                    content_parts.append(f"护城河: {r.buffett.moat_assessment}")
+                    stock_lines.append(f"护城河: {r.buffett.moat_assessment}")
                 
-                # 核心财务数据
+                # 财务数据
                 fin_lines = []
                 if r.buffett.financial_score:
-                    fin_lines.append(f"ROE:{r.buffett.financial_score} 财务健康:{r.buffett.financial_score}")
+                    fin_lines.append(f"ROE:{r.buffett.financial_score}")
                 if r.valuation.graham_value:
                     fin_lines.append(f"Graham估值:{r.currency}{r.valuation.graham_value:.1f}")
                 if r.valuation.epv_value:
                     fin_lines.append(f"EPV:{r.currency}{r.valuation.epv_value:.1f}")
                 if fin_lines:
-                    content_parts.append(" | ".join(fin_lines))
+                    stock_lines.append(" | ".join(fin_lines))
                 
                 # 专家观点
                 buffett_text = r.buffett.verdict or f"护城河评分:{r.buffett.moat_score}"
                 munger_text = r.munger.verdict or r.munger.business_quality or "分析中"
-                content_parts.append(f"Buffett: {buffett_text}")
-                content_parts.append(f"Munger: {munger_text}")
+                stock_lines.append(f"**Buffett**: {buffett_text}")
+                stock_lines.append(f"**Munger**: {munger_text}")
                 
-                # 操作建议
-                content_parts.append(f"💡 建议: {r.recommendation}")
+                # 建议
+                stock_lines.append(f"💡 **建议**: {r.recommendation}")
                 
-                # 风险/机会
+                # 风险机会
                 if r.risk_factors:
-                    content_parts.append(f"⚠️ 风险: {', '.join(r.risk_factors[:2])}")
+                    stock_lines.append(f"⚠️ 风险: {', '.join(r.risk_factors[:2])}")
                 if r.opportunity_factors:
-                    content_parts.append(f"✅ 机会: {', '.join(r.opportunity_factors[:2])}")
+                    stock_lines.append(f"✅ 机会: {', '.join(r.opportunity_factors[:2])}")
+                
+                elements.append({
+                    "tag": "div",
+                    "text": {
+                        "tag": "lark_md",
+                        "content": "\n".join(stock_lines)
+                    }
+                })
+                elements.append({"tag": "hr"})
             
             # 底部说明
-            content_parts.append(f"\n{'='*40}")
-            content_parts.append(f"框架: Buffett-Munger | 数据源: Yahoo Finance/AKShare")
+            elements.append({
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": f"*框架: Buffett-Munger | 数据源: Yahoo Finance/AKShare | {datetime.now().strftime('%Y-%m-%d')}*"
+                }
+            })
             
-            # 发送
-            notifier.send_text("\n".join(content_parts))
-            logger.info("推送完成")
+            payload = {
+                "msg_type": "interactive",
+                "card": {
+                    "config": {"wide_screen_mode": True},
+                    "header": {
+                        "template": "blue",
+                        "title": {
+                            "tag": "plain_text",
+                            "content": f"📊 价值投资分析日报 | 共{len(results)}只"
+                        }
+                    },
+                    "elements": elements
+                }
+            }
+            
+            # 直接发送
+            import requests
+            response = requests.post(
+                webhook_url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            if response.json().get("code") == 0:
+                logger.info("推送成功")
+            else:
+                logger.error(f"推送失败: {response.json()}")
     
     # 保存报告
     save_report(results)
